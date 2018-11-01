@@ -1,0 +1,12 @@
+[Bb]uild/
+cmake-build-debug/
+cmake-build-release/
+.idea/
+.vs/
+*.user
+*.cmake
+*.exe
+*.dll
+*.a
+*.lib
+*.out
