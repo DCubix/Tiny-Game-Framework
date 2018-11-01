@@ -35,6 +35,10 @@ file(GLOB SRC
 set(SRC ${SRC} ${GLM_SRC})
 set(SRC ${SRC} ${KAG_SRC})
 
+if(WIN32 OR MINGW OR MSVC)
+	set(SRC ${SRC} "resources.rc")
+endif()
+
 add_executable(tgf
         main.cpp
 		${SRC}

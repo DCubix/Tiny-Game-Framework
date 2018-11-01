@@ -8,36 +8,6 @@
 #include "src/Lua.h"
 using namespace tgf;
 
-class Test : public Game {
-public:
-	virtual ~Test() = default;
-
-	void create() final {
-
-	}
-
-	void update(float dt) final {
-
-	}
-
-	void draw(Graphics& g) final {
-		g.clear(0);
-
-		g.pushMatrix();
-			g.translate(0, 0, -3);
-
-			g.begin();
-				g.color(Fx::instance().color("red"));
-				g.vertex(-0.5f, -0.5f, 0.0f, 0.0f, 0.0f);
-				g.vertex( 0.5f, -0.5f, 0.0f, 0.0f, 0.0f);
-				g.vertex( 0.0f,  0.5f, 0.0f, 0.0f, 0.0f);
-			g.end();
-		g.popMatrix();
-
-		Fx::instance().flip();
-	}
-};
-
 class Main : public Game {
 public:
 	explicit Main(Str code) : code(std::move(code)) { }
@@ -71,7 +41,7 @@ bool endsWith(Str mainStr, Str toMatch) {
 int main(int argc, const char** argv) {
 	Str code = "print(\"No game loaded.\")\nFx:quit()";
 
-#if 1
+#if 0
 	std::ifstream t("threedee.lua");
 	if (t.good()) {
 		code = Str((std::istreambuf_iterator<char>(t)),
@@ -100,9 +70,5 @@ int main(int argc, const char** argv) {
 
 	Fx& fx = Fx::instance();
 	fx.init("Tiny Game Framework", 320, 240, 1);
-#if 1
 	return fx.run(new Main(code));
-#else
-	return fx.run(new Test());
-#endif
 }
