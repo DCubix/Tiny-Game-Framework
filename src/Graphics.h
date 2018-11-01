@@ -45,6 +45,7 @@ namespace tgf {
 		friend class Fx;
 		friend class Lua;
 	public:
+		Graphics() = default;
 		explicit Graphics(Image* target);
 		virtual ~Graphics() = default;
 
@@ -102,6 +103,8 @@ namespace tgf {
 		void remapReset();
 
 	protected:
+		Image* targetLua() const { return m_target; }
+
 		void spriteAll(Image* img, i32 x, i32 y, bool flipX, bool flipY, Rect clip);
 		void spriteFX(Image* img, i32 x, i32 y, bool flipX) { sprite(img, x, y, flipX, false); }
 		void spriteNF(Image* img, i32 x, i32 y) { sprite(img, x, y, false, false); }

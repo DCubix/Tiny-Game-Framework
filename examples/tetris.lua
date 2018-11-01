@@ -290,7 +290,7 @@ function create()
 	RES["block"] = Fx:loadImage("block.png", 0)
 	RES["playarea"] = Fx:loadImage("area.png", 0)
 	RES["nextarea"] = Fx:loadImage("next.png", 0)
-	RES["font"] = Font.new(Fx:loadImage("font.png"), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-?!'\":;/\\)(,.$_+*=", 5, 16)
+	RES["font"] = Fx.defaultFont
 	RES["font"].spacing = 0
 
 	setCurrentPiece(nil)

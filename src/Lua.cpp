@@ -4,7 +4,9 @@
 
 #include "Lua.h"
 
-#include "kaguya/kaguya.hpp"
+#define SOL_CHECK_ARGUMENTS 0
+#define SOL_NO_CHECK_NUMBER_PRECISION 1
+#include "sol.hpp"
 
 #include <optional>
 #include "Fx.h"
@@ -36,190 +38,193 @@ namespace tgf {
 	}
 
 	void Lua::init() {
-		m_L = Ptr<kaguya::State>(new kaguya::State());
-		kaguya::State& L = *m_L.get();
+		L = luaL_newstate();
+		luaL_openlibs(L);
 
-		L.openlibs();
-		L.setErrorHandler([](int status, const char* msg) {
-			LogE("[Lua(err #", status, ") ", msg);
-		});
+		sol::state_view vL(L);
 
-		L["Framework"].setClass(kaguya::UserdataMetatable<Fx>()
-				.addFunction("color", &Fx::color)
-				.addFunction("flip", &Fx::flip)
-				.addFunction("quit", &Fx::quit)
-				.addFunction("resize", &Fx::resize)
-				.addFunction("buttonPressed", &Fx::buttonPressed)
-				.addFunction("buttonReleased", &Fx::buttonReleased)
-				.addFunction("buttonDown", &Fx::buttonDown)
-				.addFunction("mousePressed", &Fx::mousePressed)
-				.addFunction("mouseReleased", &Fx::mouseReleased)
-				.addFunction("mouseDown", &Fx::mouseDown)
-				.addFunction("warpMouse", &Fx::warpMouse)
-				.addFunction("createAnimator", &Fx::createAnimator)
-				.addFunction("createSound", &Fx::createSound)
-				.addFunction("loadModel", &Fx::loadModel)
-				.addOverloadedFunctions("title", &Fx::title, &Fx::setTitle)
-				.addOverloadedFunctions("createImage", &Fx::createImage, &Fx::createImageFromPixels)
-				.addOverloadedFunctions("playSound", &Fx::playSound, &Fx::playSoundAuto)
-				.addOverloadedFunctions("loadImage", &Fx::loadImage, &Fx::loadImageD, &Fx::loadImageFromMemory)
-				.addProperty("mouseX", &Fx::mouseX)
-				.addProperty("mouseY", &Fx::mouseY)
-				.addProperty("width", &Fx::width)
-				.addProperty("height", &Fx::height)
-				.addProperty("graphics", &Fx::graphics)
-				.addProperty("defaultFont", &Fx::defaultFont)
+		vL.new_simple_usertype<Fx>("Framework",
+				"color", &Fx::color,
+				"flip", &Fx::flip,
+				"quit", &Fx::quit,
+				"resize", &Fx::resize,
+				"buttonPressed", &Fx::buttonPressed,
+				"buttonReleased", &Fx::buttonReleased,
+				"buttonDown", &Fx::buttonDown,
+				"mousePressed", &Fx::mousePressed,
+				"mouseReleased", &Fx::mouseReleased,
+				"mouseDown", &Fx::mouseDown,
+				"warpMouse", &Fx::warpMouse,
+				"createAnimator", &Fx::createAnimator,
+				"createSound", &Fx::createSound,
+				"loadModel", &Fx::loadModel,
+				"title", sol::overload(&Fx::title, &Fx::setTitle),
+				"createImage", sol::overload(&Fx::createImage, &Fx::createImageFromPixels),
+				"playSound", sol::overload(&Fx::playSound, &Fx::playSoundAuto),
+				"loadImage", sol::overload(&Fx::loadImage, &Fx::loadImageD, &Fx::loadImageFromMemory),
+				"mouseX", sol::readonly_property(&Fx::mouseX),
+				"mouseY", sol::readonly_property(&Fx::mouseY),
+				"width", sol::readonly_property(&Fx::width),
+				"height", sol::readonly_property(&Fx::height),
+				"graphics", sol::readonly_property(&Fx::graphics),
+				"defaultFont", sol::readonly_property(&Fx::defaultFont)
 		);
 
-		L["Graphics"].setClass(kaguya::UserdataMetatable<Graphics>()
-				.setConstructors<Graphics(Image*)>()
-				.addFunction("clear", &Graphics::clear)
-				.addFunction("pixel", &Graphics::pixel)
-				.addFunction("line", &Graphics::line)
-				.addFunction("rect", &Graphics::rect)
-				.addFunction("circle", &Graphics::circle)
-				.addFunction("tile", &Graphics::tile)
-				.addFunction("text", &Graphics::text)
-				.addFunction("color", &Graphics::color)
-				.addFunction("vertex", &Graphics::vertex)
-				.addFunction("end3D", &Graphics::end)
-				.addFunction("bind", &Graphics::bind)
-				.addFunction("model", &Graphics::model)
-				.addFunction("smooth", &Graphics::smooth)
-				.addFunction("lighting", &Graphics::lighting)
-				.addFunction("lightDirection", &Graphics::lightDirection)
-				.addFunction("matrixMode", &Graphics::matrixMode)
-				.addFunction("pushMatrix", &Graphics::pushMatrix)
-				.addFunction("popMatrix", &Graphics::popMatrix)
-				.addFunction("identity", &Graphics::identity)
-				.addFunction("translate", &Graphics::translate)
-				.addFunction("rotate", &Graphics::rotate)
-				.addFunction("scale", &Graphics::scale)
-				.addFunction("perspective", &Graphics::perspective)
-				.addFunction("ortho", &Graphics::ortho)
-				.addOverloadedFunctions("begin3D", &Graphics::begin, &Graphics::beginMode)
-				.addOverloadedFunctions("remap", &Graphics::remap, &Graphics::remapReset, &Graphics::remapNonTransparent)
-				.addOverloadedFunctions("sprite", &Graphics::sprite, &Graphics::spriteAll, &Graphics::spriteFX, &Graphics::spriteNF)
-				.addOverloadedFunctions("clip", &Graphics::clip, &Graphics::unclip)
-				.addOverloadedFunctions("transparency", &Graphics::transparency, &Graphics::resetTransparency)
-				.addOverloadedFunctions("target", &Graphics::target, &Graphics::setTarget)
+		vL.new_simple_usertype<Graphics>("Graphics",
+				sol::constructors<Graphics(Image*)>(),
+				"clear", &Graphics::clear,
+				"pixel", &Graphics::pixel,
+				"line", &Graphics::line,
+				"rect", &Graphics::rect,
+				"circle", &Graphics::circle,
+				"tile", &Graphics::tile,
+				"text", &Graphics::text,
+				"color", &Graphics::color,
+				"vertex", &Graphics::vertex,
+				"end3D", &Graphics::end,
+				"bind", &Graphics::bind,
+				"model", &Graphics::model,
+				"smooth", &Graphics::smooth,
+				"lighting", &Graphics::lighting,
+				"lightDirection", &Graphics::lightDirection,
+				"matrixMode", &Graphics::matrixMode,
+				"pushMatrix", &Graphics::pushMatrix,
+				"popMatrix", &Graphics::popMatrix,
+				"identity", &Graphics::identity,
+				"translate", &Graphics::translate,
+				"rotate", &Graphics::rotate,
+				"scale", &Graphics::scale,
+				"perspective", &Graphics::perspective,
+				"ortho", &Graphics::ortho,
+				"begin3D", sol::overload(&Graphics::begin, &Graphics::beginMode),
+				"remap", sol::overload(&Graphics::remap, &Graphics::remapReset, &Graphics::remapNonTransparent),
+				"sprite", sol::overload(&Graphics::sprite, &Graphics::spriteAll, &Graphics::spriteFX, &Graphics::spriteNF),
+				"clip", sol::overload(&Graphics::clip, &Graphics::unclip),
+				"transparency", sol::overload(&Graphics::transparency, &Graphics::resetTransparency),
+				"target", sol::property(&Graphics::targetLua, &Graphics::setTarget)
 		);
 
-		L["Image"].setClass(kaguya::UserdataMetatable<Image>()
-				.addProperty("width", &Image::width)
-				.addProperty("height", &Image::height)
-				.addProperty("data", &Image::data)
-				.addFunction("get", &Image::get)
-				.addFunction("set", &Image::set)
+		vL.new_simple_usertype<Image>("Image",
+				"width", sol::readonly_property(&Image::width),
+				"height", sol::readonly_property(&Image::height),
+				"data", sol::readonly_property(&Image::data),
+				"get", &Image::get,
+				"set", &Image::set
 		);
 
-		L["Vertex"].setClass(kaguya::UserdataMetatable<ModelVertex>()
-				.addPropertyAny("x", GETTER(ModelVertex, x), SETTER(ModelVertex, float, x))
-				.addPropertyAny("y", GETTER(ModelVertex, y), SETTER(ModelVertex, float, y))
-				.addPropertyAny("z", GETTER(ModelVertex, z), SETTER(ModelVertex, float, z))
-				.addPropertyAny("nx", GETTER(ModelVertex, nx), SETTER(ModelVertex, float, nx))
-				.addPropertyAny("ny", GETTER(ModelVertex, ny), SETTER(ModelVertex, float, ny))
-				.addPropertyAny("nz", GETTER(ModelVertex, nz), SETTER(ModelVertex, float, nz))
-				.addPropertyAny("s", GETTER(ModelVertex, s), SETTER(ModelVertex, float, s))
-				.addPropertyAny("t", GETTER(ModelVertex, t), SETTER(ModelVertex, float, t))
+		vL.new_simple_usertype<ModelVertex>("Vertex",
+				"x", &ModelVertex::x,
+				"y", &ModelVertex::y,
+				"z", &ModelVertex::z,
+				"nx", &ModelVertex::nx,
+				"ny", &ModelVertex::ny,
+				"nz", &ModelVertex::nz,
+				"s", &ModelVertex::s,
+				"t", &ModelVertex::t
 		);
 
-		L["Model"].setClass(kaguya::UserdataMetatable<Model>()
-				.addFunction("getVertex", &Model::getVertexLua)
-				.addFunction("getIndex", &Model::getIndexLua)
-				.addFunction("addAnimation", &Model::addAnimation)
-				.addFunction("play", &Model::play)
-				.addProperty("vertexCount", &Model::vertexCount)
-				.addProperty("indexCount", &Model::indexCount)
+		vL.new_simple_usertype<Model>("Model",
+				"getVertex", &Model::getVertexLua,
+				"getIndex", &Model::getIndexLua,
+				"addAnimation", &Model::addAnimation,
+				"play", &Model::play,
+				"vertexCount", sol::readonly_property(&Model::vertexCount),
+				"indexCount", sol::readonly_property(&Model::indexCount)
 		);
 
-		L["Vector"].setClass(kaguya::UserdataMetatable<Vector>()
-				.addFunction("dot", &Vector::dot)
-				.addFunction("normalized", &Vector::normalized)
-				.addFunction("perp", &Vector::perp)
-				.addFunction("set", &Vector::set)
-				.addFunction("__len", &Vector::length)
-				.addFunction("__add", &Vector::add)
-				.addFunction("__sub", &Vector::sub)
-				.addFunction("__unm", &Vector::neg)
-				.addFunction("__div", &Vector::div)
-				.addFunction("__tostring", &Vector::toString)
-				.addOverloadedFunctions("__mul", &Vector::mul, &Vector::mulF)
-				.addProperty("angle", &Vector::angle)
-				.addProperty("length", &Vector::length)
-				.addPropertyAny("x", GETTER(Vector, x), SETTER(Vector, float, x))
-				.addPropertyAny("y", GETTER(Vector, y), SETTER(Vector, float, y))
+		vL.new_simple_usertype<Vector>("Vector",
+				sol::constructors<Vector(), Vector(float), Vector(float, float)>(),
+				"dot", &Vector::dot,
+				"normalized", &Vector::normalized,
+				"perp", &Vector::perp,
+				"set", &Vector::set,
+				"__len", &Vector::length,
+				"__add", &Vector::add,
+				"__sub", &Vector::sub,
+				"__unm", &Vector::neg,
+				"__div", &Vector::div,
+				"__tostring", &Vector::toString,
+				"__mul", sol::overload(&Vector::mul, &Vector::mulF),
+				"angle", sol::readonly_property(&Vector::angle),
+				"length", sol::readonly_property(&Vector::length),
+				"x", &Vector::x,
+				"y", &Vector::y
 		);
 
-		L["Rect"].setClass(kaguya::UserdataMetatable<Rect>()
-				.setConstructors<Rect(), Rect(i32, i32, i32, i32)>()
-				.addPropertyAny("x", GETTER(Rect, x), SETTER(Rect, i32, x))
-				.addPropertyAny("y", GETTER(Rect, y), SETTER(Rect, i32, y))
-				.addPropertyAny("w", GETTER(Rect, w), SETTER(Rect, i32, w))
-				.addPropertyAny("h", GETTER(Rect, h), SETTER(Rect, i32, h))
+		vL.new_simple_usertype<Rect>("Rect",
+				sol::constructors<Rect(), Rect(i32, i32, i32, i32)>(),
+				"x", &Rect::x,
+				"y", &Rect::y,
+				"w", &Rect::w,
+				"h", &Rect::h
 		);
 
-		L["Font"].setClass(kaguya::UserdataMetatable<Font>()
-				.setConstructors<Font(Image*, const Str&, u32, u32)>()
-				.addFunction("stringWidth", &Font::stringWidth)
-				.addProperty("spacing", &Font::spacing, &Font::setSpacing)
-				.addProperty("charMap", &Font::charMap, &Font::setCharMap)
-				.addProperty("image", &Font::image)
-				.addProperty("columns", &Font::columns)
-				.addProperty("rows", &Font::rows)
+		vL.new_simple_usertype<Font>("Font",
+				sol::constructors<Font(Image*, const Str&, u32, u32)>(),
+				"stringWidth", &Font::stringWidth,
+				"spacing", sol::property(&Font::spacing, &Font::setSpacing),
+				"charMap", sol::property(&Font::charMap, &Font::setCharMap),
+				"image", sol::readonly_property(&Font::image),
+				"columns", sol::readonly_property(&Font::columns),
+				"rows", sol::readonly_property(&Font::rows),
+				"height", sol::readonly_property(&Font::height)
 		);
 
-		L["Animator"].setClass(kaguya::UserdataMetatable<Animator>()
-				.addFunction("add", &Animator::add)
-				.addFunction("play", &Animator::play)
-				.addFunction("reset", &Animator::reset)
-				.addProperty("clip", &Animator::clip)
-				.addProperty("animation", &Animator::animation)
+		vL.new_simple_usertype<Animator>("Animator",
+				"add", &Animator::add,
+				"play", &Animator::play,
+				"reset", &Animator::reset,
+				"clip", sol::readonly_property(&Animator::clip),
+				"animation", sol::readonly_property(&Animator::animation)
 		);
 
-		L["Sound"].setClass(kaguya::UserdataMetatable<Sound>()
-				.addFunction("setNotes", &Sound::setNotes)
-				.addFunction("setVolumes", &Sound::setVolumes)
-				.addFunction("setEffects", &Sound::setEffects)
-				.addFunction("setWaveForms", &Sound::setWaveForms)
-				.addFunction("set", &Sound::set)
-				.addProperty("speed", &Sound::speed, &Sound::setSpeed)
+		vL.new_simple_usertype<Sound>("Sound",
+				"setNotes", &Sound::setNotes,
+				"setVolumes", &Sound::setVolumes,
+				"setEffects", &Sound::setEffects,
+				"setWaveForms", &Sound::setWaveForms,
+				"set", &Sound::set,
+				"speed", sol::property(&Sound::speed, &Sound::setSpeed)
 		);
 
-		L["math"]["radians"] = &radians;
-		L["math"]["degrees"] = &degrees;
+		vL["math"]["radians"] = &radians;
+		vL["math"]["degrees"] = &degrees;
 
-		L["Fx"] = &Fx::instance();
+		vL["Fx"] = &Fx::instance();
 	}
 
 	Lua::~Lua() = default;
 
 	void Lua::runScript(const Str& code) {
-		kaguya::State& L = *m_L.get();
-		L.dostring(code);
+		sol::state_view vL(L);
+		try {
+			vL.script(code);
+		} catch (const sol::error& err) {
+			LogE("[Lua Error] ", err.what());
+		}
 	}
 
 	void Lua::onCreate() {
-		kaguya::State& L = *m_L.get();
-		kaguya::LuaFunction fun = L["create"];
-		if (fun.type() == LUA_TFUNCTION) {
-			fun.call<void>();
+		sol::state_view vL(L);
+		auto&& fun = vL["create"];
+		if (fun.get_type() == sol::type::function) {
+			fun.call();
 		}
 	}
 
 	void Lua::onUpdate(float dt) {
-		kaguya::State& L = *m_L.get();
-		kaguya::LuaFunction fun = L["update"];
-		if (fun.type() == LUA_TFUNCTION) {
-			fun.call<void>(dt);
+		sol::state_view vL(L);
+		auto&& fun = vL["update"];
+		if (fun.get_type() == sol::type::function) {
+			fun.call(dt);
 		}
 	}
 
 	void Lua::onDraw(Graphics* g) {
-		kaguya::State& L = *m_L.get();
-		kaguya::LuaFunction fun = L["draw"];
-		if (fun.type() == LUA_TFUNCTION) {
-			fun.call<void>(g);
+		sol::state_view vL(L);
+		auto&& fun = vL["draw"];
+		if (fun.get_type() == sol::type::function) {
+			fun.call(g);
 		}
 	}
 

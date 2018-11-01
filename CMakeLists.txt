@@ -19,8 +19,8 @@ if(GNU OR MINGW)
 	message(STATUS "Using BIG OBJ")
 endif()
 
-file(GLOB_RECURSE KAG_SRC
-	"src/kaguya/*.hpp"
+set(BINDER_SRC
+	"src/sol.hpp"
 )
 file(GLOB_RECURSE GLM_SRC "src/glm/*.hpp")
 file(GLOB SRC
@@ -33,7 +33,7 @@ file(GLOB SRC
 )
 
 set(SRC ${SRC} ${GLM_SRC})
-set(SRC ${SRC} ${KAG_SRC})
+set(SRC ${SRC} ${BINDER_SRC})
 
 if(WIN32 OR MINGW OR MSVC)
 	set(SRC ${SRC} "resources.rc")
@@ -45,5 +45,5 @@ add_executable(tgf
 )
 target_link_libraries(tgf
         ${SDL2_LIBRARIES}
-        ${LUA_LIBRARIES}
+		${LUA_LIBRARIES}
 )

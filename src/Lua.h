@@ -10,10 +10,6 @@
 #include "Types.h"
 #include "Graphics.h"
 
-namespace kaguya {
-	class State;
-}
-
 namespace tgf {
 
 	class Lua {
@@ -36,7 +32,7 @@ namespace tgf {
 	private:
 		static Ptr<Lua> s_instance;
 
-		Ptr<kaguya::State> m_L;
+		lua_State* L;
 	};
 }
 

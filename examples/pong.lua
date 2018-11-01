@@ -8,6 +8,7 @@ local snd = nil
 local bounceSnd = nil
 local stateTime = 0.0
 local blinkText = false
+local col = Fx:color("red")
 
 local ball = {
 	x = 0,
@@ -43,9 +44,6 @@ function create()
 	ball.x = math.floor(Fx.width / 2)
 	ball.y = math.floor(Fx.height / 2)
 
-	font = Font.new(Fx:loadImage("font.png"), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-?!'\":;/\\)(,.$_+*=", 5, 16)
-	font.spacing = 0
-
 	snd = Fx:createSound()
 	snd:set("C3F2E2B", "T", "3211", "S")
 	snd.speed = 0.02
@@ -53,6 +51,8 @@ function create()
 	bounceSnd = Fx:createSound()
 	bounceSnd:set("B5C", "N", "3", "S")
 	bounceSnd.speed = 0.02
+
+	font = Fx.defaultFont
 
 	math.randomseed(os.time())
 end
@@ -204,6 +204,7 @@ function draw(g)
 	g:rect(Fx.width - 12, paddle2.y - hp, 4, paddleSize, col, true)
 
 	g:transparency(col)
+
 	local h = math.floor(font.height / 2)
 	if gameState == "READY" then
 		local w = math.floor(font:stringWidth("Ready?") / 2)
