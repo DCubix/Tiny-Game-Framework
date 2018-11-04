@@ -3,7 +3,7 @@ local anim = nil
 
 function create()
 	Fx:resize(160, 120, 2)
-	Fx:title("Sound")
+	Fx:title("Sprites")
 
 	-- Images in TGF, can be loaded from simple PNG files.
 	-- The colors will be converted to fit TGF's palette,

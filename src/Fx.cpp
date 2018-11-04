@@ -222,7 +222,6 @@ namespace tgf {
 		m_game->create();
 
 		double lastTime = TIME();
-		double accum = 0.0;
 
 		SDL_Event evt;
 
@@ -231,15 +230,17 @@ namespace tgf {
 
 			bool canRender = false;
 			double current = TIME();
-			double delta = current - lastTime;
+			double frameTime = current - lastTime;
 			lastTime = current;
-			accum += delta;
 
-			while (accum >= TGF_TIMESTEP) {
-				accum -= TGF_TIMESTEP;
+			while (frameTime > 0.0) {
+				float delta = std::min(float(frameTime), float(TGF_TIMESTEP));
+
 				updateInput(evt);
-				updateAnimators(float(TGF_TIMESTEP));
-				m_game->update(float(TGF_TIMESTEP));
+				updateAnimators(delta);
+				m_game->update(delta);
+
+				frameTime -= double(delta);
 				canRender = true;
 			}
 
@@ -392,7 +393,6 @@ namespace tgf {
 		int size = 0;
 		const double* mat;
 		switch (ditherMode) {
-			default:
 			case DitherMode::None: return comp;
 			case DitherMode::Mode2x2: size = 2; mat = &DITHER_2x2[0]; break;
 			case DitherMode::Mode3x3: size = 3; mat = &DITHER_3x3[0]; break;

@@ -12,9 +12,9 @@ function create()
 	-- Then you set the sound parameters such as notes, volumes, waveforms, etc...
 	-- From the API: Sound:set(notes, waveForms, volumes, effects)
 	-- (The parameters are all strings!)
-	mySound:set("C2D2E2F2G2A2B2C3", "T", "5", "S")
+	mySound:set("C2D2E2F2G2A2B2C3", "T", "5", "F")
 	-- You can also set some options...
-	mySound.speed = 0.07
+	mySound.speed = 0.08
 
 	-- Check the API doc for more!
 end

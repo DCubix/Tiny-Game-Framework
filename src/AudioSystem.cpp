@@ -340,7 +340,7 @@ namespace tgf {
 		spec.userdata = this;
 		spec.format = AUDIO_F32;
 
-		if ((m_device = SDL_OpenAudioDevice(nullptr, 0, &spec, &m_spec, 0)) < 0) {
+		if ((m_device = SDL_OpenAudioDevice(nullptr, 0, &spec, &m_spec, 0)) == 0) {
 			LogE(SDL_GetError());
 			return;
 		}
