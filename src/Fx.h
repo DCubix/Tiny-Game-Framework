@@ -6,7 +6,6 @@
 #define TGF_FX_H
 
 #include "Graphics.h"
-#include "Animator.h"
 #include "AudioSystem.h"
 #include "Font.h"
 #include "Model.h"
@@ -63,7 +62,6 @@ namespace tgf {
 		Image* createImageFromPixels(u32 width, u32 height, const byte* pixels);
 		Image* loadImage(const Str& fileName);
 		Image* loadImageFromMemory(const byte* pixels, unsigned long size, DitherMode ditherMode);
-		Animator* createAnimator(u32 width, u32 height, u32 rows, u32 cols);
 		Sound* createSound();
 		Model* loadModel(const Str& fileName);
 
@@ -128,7 +126,6 @@ namespace tgf {
 
 		/// Resources
 		Vec<Ptr<Image>> m_imageResources;
-		Vec<Ptr<Animator>> m_animators;
 		Vec<Ptr<Sound>> m_sounds;
 		Vec<Ptr<Model>> m_models;
 

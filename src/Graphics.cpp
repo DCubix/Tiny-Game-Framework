@@ -154,6 +154,10 @@ namespace tgf {
 	void Graphics::spriteAll(Image* img, i32 x, i32 y, bool flipX, bool flipY, Rect clip) {
 		assert(img != nullptr && "Invalid image.");
 
+		if (img->animatable()) {
+			clip = img->clip();
+		}
+
 		i32 srcX = clip.valid() ? clip.x : 0;
 		i32 srcY = clip.valid() ? clip.y : 0;
 		i32 srcW = clip.valid() ? clip.w : img->width();

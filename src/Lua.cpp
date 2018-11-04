@@ -4,10 +4,6 @@
 
 #include "Lua.h"
 
-#define SOL_CHECK_ARGUMENTS 0
-#define SOL_NO_CHECK_NUMBER_PRECISION 1
-#include "sol.hpp"
-
 #include <optional>
 #include "Fx.h"
 #include "Log.h"
@@ -17,8 +13,9 @@
 #include "3DRendering.h"
 #include "Model.h"
 
-#define GETTER(T, v) [](const T* self) { return self->v; }
-#define SETTER(T, S, v) [](T* self, S nv) { self->v = nv; }
+#define SOL_CHECK_ARGUMENTS 0
+#define SOL_NO_CHECK_NUMBER_PRECISION 1
+#include "sol.hpp"
 
 namespace tgf {
 	static float radians(float a) {
@@ -55,13 +52,12 @@ namespace tgf {
 				"mouseReleased", &Fx::mouseReleased,
 				"mouseDown", &Fx::mouseDown,
 				"warpMouse", &Fx::warpMouse,
-				"createAnimator", &Fx::createAnimator,
 				"createSound", &Fx::createSound,
 				"loadModel", &Fx::loadModel,
 				"title", sol::overload(&Fx::title, &Fx::setTitle),
 				"createImage", sol::overload(&Fx::createImage, &Fx::createImageFromPixels),
 				"playSound", sol::overload(&Fx::playSound, &Fx::playSoundAuto),
-				"loadImage", sol::overload(&Fx::loadImage, &Fx::loadImageD, &Fx::loadImageFromMemory),
+				"loadImage", sol::overload(&Fx::loadImage, &Fx::loadImageD),
 				"mouseX", sol::readonly_property(&Fx::mouseX),
 				"mouseY", sol::readonly_property(&Fx::mouseY),
 				"width", sol::readonly_property(&Fx::width),
@@ -85,8 +81,7 @@ namespace tgf {
 				"bind", &Graphics::bind,
 				"model", &Graphics::model,
 				"smooth", &Graphics::smooth,
-				"lighting", &Graphics::lighting,
-				"lightDirection", &Graphics::lightDirection,
+				"light", sol::overload(&Graphics::lightDirection, &Graphics::lighting),
 				"matrixMode", &Graphics::matrixMode,
 				"pushMatrix", &Graphics::pushMatrix,
 				"popMatrix", &Graphics::popMatrix,
@@ -100,7 +95,7 @@ namespace tgf {
 				"remap", sol::overload(&Graphics::remap, &Graphics::remapReset, &Graphics::remapNonTransparent),
 				"sprite", sol::overload(&Graphics::sprite, &Graphics::spriteAll, &Graphics::spriteFX, &Graphics::spriteNF),
 				"clip", sol::overload(&Graphics::clip, &Graphics::unclip),
-				"transparency", sol::overload(&Graphics::transparency, &Graphics::resetTransparency),
+				"key", sol::overload(&Graphics::transparency, &Graphics::resetTransparency),
 				"target", sol::property(&Graphics::targetLua, &Graphics::setTarget)
 		);
 
@@ -109,7 +104,13 @@ namespace tgf {
 				"height", sol::readonly_property(&Image::height),
 				"data", sol::readonly_property(&Image::data),
 				"get", &Image::get,
-				"set", &Image::set
+				"set", &Image::set,
+				/* Animation */
+				"animation", sol::readonly_property(&Image::animation),
+				"add", &Image::addL,
+				"play", &Image::play,
+				"reset", &Image::reset,
+				"animate", &Image::animate
 		);
 
 		vL.new_simple_usertype<ModelVertex>("Vertex",
@@ -168,14 +169,6 @@ namespace tgf {
 				"columns", sol::readonly_property(&Font::columns),
 				"rows", sol::readonly_property(&Font::rows),
 				"height", sol::readonly_property(&Font::height)
-		);
-
-		vL.new_simple_usertype<Animator>("Animator",
-				"add", &Animator::add,
-				"play", &Animator::play,
-				"reset", &Animator::reset,
-				"clip", sol::readonly_property(&Animator::clip),
-				"animation", sol::readonly_property(&Animator::animation)
 		);
 
 		vL.new_simple_usertype<Sound>("Sound",

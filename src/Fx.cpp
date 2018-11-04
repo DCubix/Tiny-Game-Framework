@@ -462,14 +462,10 @@ namespace tgf {
 		return State();
 	}
 
-	Animator* Fx::createAnimator(u32 width, u32 height, u32 rows, u32 cols) {
-		m_animators.push_back(std::make_unique<Animator>(width, height, rows, cols));
-		return m_animators.back().get();
-	}
-
 	void Fx::updateAnimators(float dt) {
-		for (auto&& anim : m_animators) {
-			anim->update(dt);
+		for (auto&& img : m_imageResources) {
+			if (!img->animatable()) continue;
+			img->update(dt);
 		}
 
 		/// 3D Animators

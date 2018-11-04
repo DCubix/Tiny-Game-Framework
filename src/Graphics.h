@@ -10,7 +10,6 @@
 
 #include "Image.h"
 #include "Rect.h"
-#include "Animator.h"
 #include "Font.h"
 #include "Vector.h"
 
