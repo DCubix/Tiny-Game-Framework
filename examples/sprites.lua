@@ -8,7 +8,7 @@ function create()
 	-- Images in TGF, can be loaded from simple PNG files.
 	-- The colors will be converted to fit TGF's palette,
 	-- and dithering can also be applied.
-	image = Fx:loadImage("examples/image.png", 2)
+	image = Fx:loadImage("image.png", 2)
 
 	-- Images can also be animated:
 	image:animate(4, 4)

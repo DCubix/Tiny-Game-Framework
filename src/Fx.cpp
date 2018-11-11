@@ -551,34 +551,6 @@ namespace tgf {
 		return img;
 	}
 
-	// Split a String into a string array at a given token
-	static void split(
-		const Str& in,
-		Vec<Str>& out,
-		Str token
-	) {
-		out.clear();
-		std::string temp;
-		for (int i = 0; i < int(in.size()); i++) {
-			std::string test = in.substr(i, token.size());
-			if (test == token) 	{
-				if (!temp.empty()) 	{
-					out.push_back(temp);
-					temp.clear();
-					i += (int)token.size() - 1;
-				} else {
-					out.push_back("");
-				}
-			} else if (i + token.size() >= in.size()) {
-				temp += in.substr(i, token.size());
-				out.push_back(temp);
-				break;
-			} else {
-				temp += in[i];
-			}
-		}
-	}
-
 	static void calculateNormals(Vec<ModelVertex>& verts, Vec<u32> inds) {
 		for (u32 i = 0; i < inds.size(); i+=3) {
 			ModelVertex& v0 = verts[inds[i + 0]];

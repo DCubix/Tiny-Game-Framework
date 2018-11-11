@@ -295,33 +295,26 @@ namespace tgf {
 
 					if (m_lightingEnabled) {
 						// Perform lighting
-						glm::vec3 tN(0.0f);
-						if (!m_smoothShading) {
-							glm::vec3 e1 = glm::vec3(tri.vpos1 - tri.vpos0);
-							glm::vec3 e2 = glm::vec3(tri.vpos2 - tri.vpos0);
-							tN = glm::normalize(glm::cross(e1, e2));
-						} else {
-							tN = glm::normalize(P.x * tri.v0.normal + P.y * tri.v1.normal + P.z * tri.v2.normal);
-						}
-
-						float shading = calculateShading(tN, -m_lightDirection);
-						shading = glm::clamp(shading + 0.2f, 0.0f, 1.0f);
+						float shading = P.x * tri.v0.shade + P.y * tri.v1.shade + P.z * tri.v2.shade;
 
 						RGB a = Fx::instance().palette()[color];
 						if (m_boundTexture != nullptr) {
-							i32 tx = m_boundTexture->width() * uv.x;
-							i32 ty = m_boundTexture->height() * uv.y;
+							i32 tx = i32(m_boundTexture->width() * uv.x);
+							i32 ty = i32(m_boundTexture->height() * uv.y);
 							a = Fx::instance().palette()[m_boundTexture->get(tx, ty, true)];
 						}
-						RGB scol = {
-							glm::clamp(u8((float(a.r)/255.0f * shading)*255), u8(0), u8(255)),
-							glm::clamp(u8((float(a.g)/255.0f * shading)*255), u8(0), u8(255)),
-							glm::clamp(u8((float(a.b)/255.0f * shading)*255), u8(0), u8(255))
-						};
 
-						scol.r = Fx::instance().dither(x, y, scol.r, DitherMode::Mode8x8);
-						scol.g = Fx::instance().dither(x, y, scol.g, DitherMode::Mode8x8);
-						scol.b = Fx::instance().dither(x, y, scol.b, DitherMode::Mode8x8);
+						float afr = float(a.r) / 255.0f * shading;
+						float afg = float(a.g) / 255.0f * shading;
+						float afb = float(a.b) / 255.0f * shading;
+
+						RGB scol;
+						scol.r = u8(afr * 255.0f);
+						scol.g = u8(afg * 255.0f);
+						scol.b = u8(afb * 255.0f);
+						scol.r = Fx::instance().dither(x, y, scol.r, DitherMode::Mode4x4);
+						scol.g = Fx::instance().dither(x, y, scol.g, DitherMode::Mode4x4);
+						scol.b = Fx::instance().dither(x, y, scol.b, DitherMode::Mode4x4);
 						color = Fx::instance().closestPaletteColor(scol);
 					} else {
 						if (m_boundTexture != nullptr) {
@@ -339,14 +332,28 @@ namespace tgf {
 	}
 
 	void Graphics::triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2) {
-		const glm::mat4 mvp = m_projection.matrix() * m_modelView.matrix();
-
 		Vec<Vertex> vertices, aux;
 		vertices.insert(vertices.end(), {
-			v0.transform(mvp),
-			v1.transform(mvp),
-			v2.transform(mvp)
+			v0,	v1, v2
 		});
+
+		if (m_lightingEnabled) {
+			const float ambient = 0.5f;
+			glm::vec3 e1 = glm::vec3(v1.position - v0.position);
+			glm::vec3 e2 = glm::vec3(v2.position - v0.position);
+			glm::vec3 triNormal = glm::normalize(glm::cross(e1, e2));
+			for (Vertex& v : vertices) {
+				glm::vec3 tN(0.0f);
+				if (!m_smoothShading) {
+					tN = triNormal;
+				} else {
+					tN = -glm::normalize(v.normal);
+				}
+
+				float shading = glm::dot(tN, -m_lightDirection);
+				v.shade = glm::clamp(shading, ambient, 1.0f);
+			}
+		}
 
 		if (clipPolygonAxis(vertices, aux, 0) &&
 			clipPolygonAxis(vertices, aux, 1) &&
@@ -360,22 +367,17 @@ namespace tgf {
 	}
 
 	void Graphics::line3D(const Vertex& v0, const Vertex& v1) {
-		const glm::mat4 mvp = m_projection.matrix() * m_modelView.matrix();
 		const u32 drawWidth = m_target->width();
 		const u32 drawHeight = m_target->height();
 
-		Vertex vt0 = createVertex(v0.transform(mvp), drawWidth, drawHeight);
-		Vertex vt1 = createVertex(v1.transform(mvp), drawWidth, drawHeight);
+		Vertex vt0 = createVertex(v0, drawWidth, drawHeight);
+		Vertex vt1 = createVertex(v1, drawWidth, drawHeight);
 
 		line(
 			vt0.position.x, vt0.position.y,
 			vt1.position.x, vt1.position.y,
 			m_triangleColor
 		);
-	}
-
-	float Graphics::calculateShading(const glm::vec3& N, const glm::vec3& L) {
-		return glm::clamp(glm::dot(N, L), 0.0f, 1.0f);
 	}
 
 	void Graphics::begin() {
@@ -411,10 +413,11 @@ namespace tgf {
 	}
 
 	void Graphics::vertex(float x, float y, float z, float s, float t) {
-		vertexN(x, y, z, s, y, 0, 0, 0);
+		vertexN(x, y, z, s, t, 0, 0, 0);
 	}
 
 	void Graphics::vertexN(float x, float y, float z, float s, float t, float nx, float ny, float nz) {
+		const glm::mat4 mvp = m_projection.matrix() * m_modelView.matrix();
 		Vertex v;
 		v.position.x = x;
 		v.position.y = y;
@@ -426,7 +429,7 @@ namespace tgf {
 		v.normal.x = nx;
 		v.normal.y = ny;
 		v.normal.z = nz;
-		m_vertices.push_back(v);
+		m_vertices.push_back(v.transform(mvp));
 	}
 
 	void Graphics::end() {
@@ -461,8 +464,7 @@ namespace tgf {
 				const u32 drawWidth = m_target->width();
 				const u32 drawHeight = m_target->height();
 				for (u32 i = 0; i < m_vertices.size(); i++) {
-					Vertex v0 = m_vertices[i + 0].transform(mvp);
-					Vertex p = createVertex(v0, drawWidth, drawHeight);
+					Vertex p = createVertex(m_vertices[i + 0], drawWidth, drawHeight);
 					pixel(i32(p.position.x), i32(p.position.y), m_triangleColor);
 				}
 			} break;
@@ -479,9 +481,9 @@ namespace tgf {
 			u32 i0 = m->getIndex(i);
 			u32 i1 = m->getIndex(i+1);
 			u32 i2 = m->getIndex(i+2);
-			ModelVertex v0 = *m->getVertex(i0);
-			ModelVertex v1 = *m->getVertex(i1);
-			ModelVertex v2 = *m->getVertex(i2);
+			ModelVertex v0 = (*m->getVertex(i0));
+			ModelVertex v1 = (*m->getVertex(i1));
+			ModelVertex v2 = (*m->getVertex(i2));
 			vertexN(v0.x, v0.y, v0.z, v0.s, v0.t, v0.nx, v0.ny, v0.nz);
 			vertexN(v1.x, v1.y, v1.z, v1.s, v1.t, v1.nx, v1.ny, v1.nz);
 			vertexN(v2.x, v2.y, v2.z, v2.s, v2.t, v2.nx, v2.ny, v2.nz);

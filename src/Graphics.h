@@ -17,12 +17,6 @@
 #include "3DRendering.h"
 #include "Model.h"
 
-#define MUL_COLOR(a, b) {\
-	u8((float(a.r)/255.0f * float(b.r)/255.0f)*255),\
-	u8((float(a.g)/255.0f * float(b.g)/255.0f)*255),\
-	u8((float(a.b)/255.0f * float(b.b)/255.0f)*255)\
-}
-
 namespace tgf {
 	using namespace td;
 
@@ -135,8 +129,6 @@ namespace tgf {
 		void triangleUC(const Vertex& v0, const Vertex& v1, const Vertex& v2);
 		void triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2);
 		void line3D(const Vertex& v0, const Vertex& v1);
-
-		float calculateShading(const glm::vec3& N, const glm::vec3& L);
 	};
 }
 

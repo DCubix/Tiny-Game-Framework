@@ -8,6 +8,14 @@
 #include "src/Lua.h"
 using namespace tgf;
 
+#ifdef WINDOWS
+#include <direct.h>
+#define ChangeDir _chdir
+#else
+#include "unistd.h"
+#define ChangeDir chdir
+#endif
+
 class Main : public Game {
 public:
 	explicit Main(Str code) : code(std::move(code)) { }
@@ -52,18 +60,28 @@ int main(int argc, const char** argv) {
 	if (argc == 2) {
 		const Str ARG1 = Str(argv[1]);
 		if (endsWith(ARG1, "lua")) { // Running a plain Lua script (.lua)
-			std::ifstream t(ARG1);
+			// Change working directory to the one the script file is in
+			Str path = ARG1;
+			Str fileName = path.substr(path.find_last_of('/')+1);
+			std::replace(path.begin(), path.end(), '\\', '/');
+			const Str dir = path.substr(0, path.find_last_of('/'));
+
+			if (dir != fileName) {
+				ChangeDir(dir.c_str());
+			}
+
+			std::ifstream t(fileName);
 			if (t.good()) {
 				code = Str((std::istreambuf_iterator<char>(t)),
 						std::istreambuf_iterator<char>());
 				t.close();
 			} else {
-				LogE("Invalid script file.");
+				LogE("Invalid script file: File not found.");
 				return 2;
 			}
 		} else {
-			LogE("Invalid script file.");
-			return 2;
+			LogE("Invalid script file: Unknown format.");
+			return 3;
 		}
 	}
 #endif

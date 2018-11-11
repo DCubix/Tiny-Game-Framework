@@ -21,6 +21,7 @@ namespace tgf { namespace td {
 		glm::vec2 uv;
 		glm::vec3 normal;
 		u8 color;
+		float shade;
 
 		Vertex transform(const glm::mat4& t) const;
 		Vertex lerp(const Vertex& o, float amt) const;

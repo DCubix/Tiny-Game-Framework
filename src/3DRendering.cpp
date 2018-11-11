@@ -15,6 +15,7 @@ namespace tgf { namespace td {
 		tvx.uv = uv;
 		tvx.color = color;
 		tvx.normal = glm::normalize(glm::vec3(t * glm::vec4(normal, 0.0f)));
+		tvx.shade = shade;
 		return tvx;
 	}
 
@@ -24,6 +25,7 @@ namespace tgf { namespace td {
 		tvx.uv = glm::mix(uv, o.uv, amt);
 		tvx.color = color;
 		tvx.normal = glm::mix(normal, o.normal, amt);
+		tvx.shade = glm::mix(shade, o.shade, amt);
 		return tvx;
 	}
 
@@ -121,7 +123,7 @@ namespace tgf { namespace td {
 		nv.position /= v0.position.w;
 
 		nv = toScreenSpace(nv, drawWidth, drawHeight);
-		nv.floor();
+//		nv.floor();
 
 		return nv;
 	}
@@ -170,9 +172,9 @@ namespace tgf { namespace td {
 		tri.maxY = std::max(vt0.position.y, std::max(vt1.position.y, vt2.position.y));
 		tri.minY = std::min(vt0.position.y, std::min(vt1.position.y, vt2.position.y));
 
-		vt0.floor();
-		vt1.floor();
-		vt2.floor();
+//		vt0.floor();
+//		vt1.floor();
+//		vt2.floor();
 
 		tri.v0 = vt0;
 		tri.v1 = vt1;
